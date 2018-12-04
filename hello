@@ -2,9 +2,11 @@
 sub handler {
   my $context = shift;
 
-  die "Random error" if (rand > 0.5);
+  return 40+2 . " is the answer. Running Perl $^V from $^X";
+}
 
-  return 40+2 . " is the answer";
+sub error {
+  die "I've died";
 }
 
 1;
