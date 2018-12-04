@@ -6,7 +6,7 @@ runtime-5.28:
 
 dist:
 	mkdir -p layers
-	zip layers/lambda.zip -j bootstrap hello
+	zip layers/lambda.zip -j bootstrap/bootstrap hello
 
 explore-lambda-environment:
 	docker run --rm -ti --entrypoint /bin/bash lambci/lambda:latest
