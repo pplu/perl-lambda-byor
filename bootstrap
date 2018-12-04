@@ -11,6 +11,8 @@
 use strict;
 use warnings;
 
+use lib '/var/task';
+
 use HTTP::Tiny;
 my $ua = HTTP::Tiny->new;
 
