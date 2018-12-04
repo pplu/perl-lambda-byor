@@ -13,6 +13,9 @@ use warnings;
 
 use lib '/var/task';
 
+use JSON::MaybeXS;
+my $json_parser = JSON::MaybeXS->new;
+
 use HTTP::Tiny;
 my $ua = HTTP::Tiny->new;
 
@@ -37,13 +40,14 @@ while (1) {
 
   my $request_id = $request->{ headers }->{'lambda-runtime-aws-request-id'};
   die "Didn't get the request-id in the expected header" if (not defined $request_id);
-  my $params = $request->{ content };
+
+  my $event = $json_parser->decode($request->{ content });
 
   my $result = eval {
     # no strict refs is so we can call a subroutine whose name is stored in variable
     # entrypoint while 'use strict' is on
     no strict 'refs';
-    &$entrypoint($params);
+    &$entrypoint($event);
   };
   if ($@) {
     my $error_message = $@;
