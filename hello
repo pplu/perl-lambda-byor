@@ -1,7 +1,14 @@
 
-sub handler {
-  my $context = shift;
+use v5.10;
+use Data::Dumper;
 
+sub handler {
+  my $event = shift;
+
+  # this logs to the Cloudwatch log of the Lambda function
+  say STDERR Dumper($event);
+
+  # this is the stuff that gets returned to the invoker
   return 40+2 . " is the answer. Running Perl $^V from $^X";
 }
 
