@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+# (c) 2018 CAPSiDE
+# Jose Luis Martinez Torres
+# Licensed under Apache 2.0
 # Implements a custom runtime handler for Perl. See:
 # https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html
 # https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html

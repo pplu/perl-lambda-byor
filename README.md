@@ -49,3 +49,20 @@ which means that perl-core isn't installed in the runtime enviornment [see](http
 
 The bootstrap script is trying to be agnostic of the Perl that is below, only using core modules, but
 
+License
+=======
+
+This software is released under an Apache 2.0
+
+Copyright
+=========
+
+(c) 2018 CAPSiDE
+
+Author
+======
+
+Jose Luis Martinez Torres
+
+
+
