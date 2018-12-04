@@ -10,6 +10,22 @@ The implementation is not complete yet, though it does work to some extent :)
 Try it
 ======
 
+ - Create a runtime layer
+
+Although Perl is installed in the Lambda environment, since AWS bases the OS on CentOS, the Perl runtime is quite old (5.16, where at the time of this
+writing Perl has gone through 5.18, 5.20, 5.22, 5.24, 5.26 and 5.28 releases). Added to that, the Perl installation is lacking the 'perl-core' yum
+package, which makes that Perl very hard to deal with, since it's lacking almost all of the "core" modules that you would normally find installed
+on a system. Because of that, we're going to use custom compiled, modern versions of Perl as the runtime.
+
+```
+make runtime-5.28
+```
+
+will generate a `runtimes/5.28/layer.zip`. Create a layer uploading this zip file in the Lambda console. Take good note of it's ARN. If you don't want
+to compile Perl, you can find it in the git repo.
+
+ - Create a Lambda function
+
 Create a Lambda function with a custom runtime. Execute `make dist`. This will create a layers/lambda.zip file with the code to upload to Lambda. The
 default `hello.handler` will work.
 
