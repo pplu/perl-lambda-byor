@@ -1,0 +1,10 @@
+
+sub handler {
+  my $context = shift;
+
+  die "Random error" if (rand > 0.5);
+
+  return 40+2 . " is the answer";
+}
+
+1;
