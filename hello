@@ -1,6 +1,7 @@
 
 use v5.10;
 use Data::Dumper;
+use HTTP::Tiny;
 
 sub handler {
   my $event = shift;
@@ -8,12 +9,27 @@ sub handler {
   # this logs to the Cloudwatch log of the Lambda function
   say STDERR Dumper($event);
 
+  say STDERR Dumper(\@INC, \%ENV);
+
   # this is the stuff that gets returned to the invoker
   return 40+2 . " is the answer. Running Perl $^V from $^X";
 }
 
 sub error {
   die "I've died";
+}
+
+sub https_request {
+  my $ua = HTTP::Tiny->new;
+  my $response = $ua->get('https://metacpan.org/recent');
+  die $response->{ content } if (not $response->{ success });
+
+  my ($results) = ($response->{ content } =~ m/(\d+,\d+)/);
+  return "There are currently $results packages on CPAN";
+}
+
+sub ls_opt {
+  print STDERR `ls -la /opt/layer1-lib/lib/perl5`;
 }
 
 1;

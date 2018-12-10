@@ -40,6 +40,13 @@ You can invoke the function with the AWS CLI, or with Paws: `paws Lambda --regio
 The bootstrap script will require the `hello` file (or whatever the handler of the Lambda function tells it to), and will invoke the `handler` sub in 
 the hello file with the parsed JSON payload passed to the function as a hashref.
 
+Packaging binary dependencies
+=============================
+
+If you write a a cpanfile and invoke `make layer1-lib`, a zip file will be generated in the layers directory. It contains the packaged binary dependencies. Upload the Layer to Lambda, and add the layer to the appropiate Lambda function.
+
+You will be able to use the dependencies from your handler.
+
 TODO
 ====
 

@@ -11,7 +11,7 @@
 use strict;
 use warnings;
 
-use lib '/var/task';
+use lib '/var/task', '/opt/layer1-lib/lib/perl5';
 
 use JSON::MaybeXS;
 my $json_parser = JSON::MaybeXS->new;
