@@ -1,1 +1,2 @@
-requires 'IO::Socket::SSL';
+requires 'Path::Tiny';
+requires 'YAML::PP';
