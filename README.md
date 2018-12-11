@@ -18,10 +18,11 @@ package, which makes that Perl very hard to deal with, since it's lacking almost
 on a system. Because of that, we're going to use custom compiled, modern versions of Perl as the runtime.
 
 ```
-make runtime-5.28
+mkdir layers
+./script/build-lambda-perl-runtime 5.28
 ```
 
-will generate a `runtimes/5.28/layer.zip`. Create a layer uploading this zip file in the Lambda console. Take good note of it's ARN. If you don't want
+will generate a `layers/perl_5.28.zip`. Create a layer uploading this zip file in the Lambda console. Take good note of it's ARN. If you don't want
 to compile Perl, you can find it in the git repo.
 
  - Create a Lambda function

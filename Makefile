@@ -1,16 +1,3 @@
-runtime-5.28:
-	docker build -t lambda-perl-runtime:5.28 runtimes/5.28/
-	docker run --name get_runtime lambda-perl-runtime:5.28 echo ''
-	docker cp get_runtime:/layer.zip runtimes/5.28/
-	docker rm get_runtime
-
-runtime-5.16:
-	docker build -t lambda-perl-runtime:5.16 runtimes/5.16/
-	docker run --name get_runtime lambda-perl-runtime:5.16 echo ''
-	docker cp get_runtime:/layer.zip runtimes/5.16/
-	docker rm get_runtime
-
-
 layer1-lib:
 	docker build -t lambda-perl-layer1:test .
 	docker run --name get_zip lambda-perl-layer1:test echo ''

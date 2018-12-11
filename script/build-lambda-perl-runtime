@@ -1,0 +1,58 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Path::Tiny;
+
+my $version = $ARGV[0] or die "Usage: $0 perl_version";
+
+my $versions = {
+  '5.28' => '5.28.1',
+  '5.26' => '5.26.3',
+};
+
+my $cpanfile = <<EOCPANFILE;
+requires 'JSON::MaybeXS';
+EOCPANFILE
+
+my $minor_perl_version = $versions->{ $version };
+
+die "I don't know the minor version for Perl $version" if (not defined $minor_perl_version);
+
+my $build_runtime_dockerfile = <<EODOCKERFILE;
+FROM lambci/lambda:build
+
+# Install perl
+RUN curl -s -o perl-PERLVERSION.tar.gz http://www.cpan.org/src/5.0/perl-PERLVERSION.tar.gz ; \\
+    tar xzf perl-PERLVERSION.tar.gz ; \\
+    cd perl-PERLVERSION ; \\
+    ./Configure -des -Dprefix=/opt/runtime -Dman1dir=none -Dman3dir=none ; \\
+    make ; \\
+    make install
+
+# cpanm is needed for easy installation
+RUN curl -s -L https://cpanmin.us | /opt/runtime/bin/perl - App::cpanminus
+
+# modules to include in the base layer
+COPY cpanfile /tmp/
+RUN cd /tmp ; /opt/runtime/bin/cpanm -n --installdeps .
+
+# just zip it up
+RUN cd /opt ; \\
+    zip -r /layer.zip runtime
+EODOCKERFILE
+
+$build_runtime_dockerfile =~ s/PERLVERSION/$minor_perl_version/g;
+
+my $tmp_dir = Path::Tiny->tempdir("lambdaruntime_XXXXXX", CLEANUP => 0);
+
+path("$tmp_dir/Dockerfile")->spew($build_runtime_dockerfile);
+path("$tmp_dir/cpanfile")->spew($cpanfile);
+
+system "docker build -t lambda-perl-runtime:$version $tmp_dir";
+system "docker run --name get_runtime lambda-perl-runtime:$version echo ''";
+system "docker cp get_runtime:/layer.zip $tmp_dir";
+system "docker rm get_runtime";
+
+path("$tmp_dir/layer.zip")->copy("./layers/perl_$version.zip");
