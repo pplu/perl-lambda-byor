@@ -24,6 +24,7 @@ Try it
 
 ```
 mkdir my-lambda-project
+cd my-lambda-project
 ```
 
  - Create a config file named `lambda-perl.config` for your project
