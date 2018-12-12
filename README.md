@@ -46,7 +46,7 @@ on a system. Because of that, we're going to use custom compiled, modern version
 
 ```
 mkdir layers
-./script/build-lambda-perl-runtime
+build-lambda-perl-runtime
 ```
 
 will generate a `layers/perl_5.28.zip`. Create a layer in the Lambda console by uploading this zip file in the "Layers" section of the AWS Lambda Console. 
