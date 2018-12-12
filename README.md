@@ -7,8 +7,34 @@ It consists of an implementation of the `bootstrap` script as [AWS documentation
 
 The implementation is not complete yet, though it does work to some extent :)
 
+Prepare
+=======
+
+```
+git clone git@github.com:pplu/perl-lambda-byor.git
+carton install
+carton exec $SHELL -l
+export PATH=$PATH:$(pwd)/script
+```
+
 Try it
 ======
+
+ - Create a directory for your Lambda project:
+
+```
+mkdir my-lambda-project
+```
+
+ - Create a config file named `lambda-perl.config` for your project
+```
+# The dependencies layer will be built with this name
+lambda_name: test1
+# Which runtime we will be using
+perl_version: 5.28
+# The region where we will operate the lambdas
+region: us-east-1
+```
 
  - Create a runtime layer
 
@@ -19,16 +45,38 @@ on a system. Because of that, we're going to use custom compiled, modern version
 
 ```
 mkdir layers
-./script/build-lambda-perl-runtime 5.28
+./script/build-lambda-perl-runtime
 ```
 
-will generate a `layers/perl_5.28.zip`. Create a layer uploading this zip file in the Lambda console. Take good note of it's ARN. If you don't want
-to compile Perl, you can find it in the git repo.
+will generate a `layers/perl_5.28.zip`. Create a layer in the Lambda console by uploading this zip file in the "Layers" section of the AWS Lambda Console. 
+Take good note of it's ARN. If you don't want to compile Perl, you can find it in this git repo.
 
- - Create a Lambda function
+ - Create a cpanfile
 
-Create a Lambda function with a custom runtime. Execute `make dist`. This will create a layers/lambda.zip file with the code to upload to Lambda. The
-default `hello.handler` will work. You can upload the code to the Lambda function with:
+Create a `cpanfile` with the dependencies for your Lambda function
+
+```
+requires 'Moo';
+```
+Generate the dependencies layer with:
+```
+build-lambda-deps-layer
+```
+
+this will generate another zip file that can be uploaded as another layer to AWS Lambda.
+
+ - Write code. Start a file called `lambda_code`. Write a Perl subroutine:
+
+```
+sub my_function {
+  return "I'm alive!"
+}
+```
+
+Zip the `bootstrap` file with the `lambda_code` file: `zip layers/lambda.zip -j bootstrap/bootstrap lambda_code`
+
+In the AWS Console: create a Lambda function with a custom runtime. Set the handler to the name of the file, followed by '.' 
+and the name of the function to invoke: `lambda_code.my_function`. 
 
 ```
 aws lambda --region xx-xxxx-x update-function-code --function-name LambdaFunctionName --zip-file fileb://./layers/lambda.zip
@@ -38,24 +86,19 @@ aws lambda --region xx-xxxx-x update-function-code --function-name LambdaFunctio
 
 You can invoke the function with the AWS CLI, or with Paws: `paws Lambda --region x Invoke FunctionName TheNameOfYourLambda Payload ''`
 
-The bootstrap script will require the `hello` file (or whatever the handler of the Lambda function tells it to), and will invoke the `handler` sub in 
-the hello file with the parsed JSON payload passed to the function as a hashref.
-
-Packaging binary dependencies
-=============================
-
-If you write a a cpanfile and invoke `make layer1-lib`, a zip file will be generated in the layers directory. It contains the packaged binary dependencies. Upload the Layer to Lambda, and add the layer to the appropiate Lambda function.
-
-You will be able to use the dependencies from your handler.
+The bootstrap script will require the `lambda_code` file (or whatever the handler of the Lambda function tells it to), and will invoke the `my_function` sub in 
+the hello file with the parsed JSON payload passed to the function as a hashref as it's first argument.
 
 TODO
 ====
 
+Automate the lambda.zip file creation
+
+Ship the bootstrap script with the lambda runtime (instead of the final lambda.zip file)
+
 Follow all the Processing Tasks in [custom runtimes section](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html)
 
 Handle errors in compilation phase of the Lambda function
-
-Find a way to package binary dependencies like `JSON::MaybeXS` or `Moo`, probably in a layer
 
 See if Dist::Zilla can build the zip for distributing to Lambda
 
@@ -64,8 +107,6 @@ Notes
 
 Finding out what you can or can't do inside the Lambda runtime can be exhausting if you do it directly inside Lambda. The `make explore-lambda-environment` target 
 runs a shell inside a Docker container that resembles the Lambda runtime environment.
-
-The example consumes 23MB of RAM when invoked on Perl 5.28. This is nice because it leaves plenty of headroom for custom logic (the minumum mem for Lambda is 128MB).
 
 License
 =======

@@ -1,10 +1,3 @@
-layer1-lib:
-	docker build -t lambda-perl-layer1:test .
-	docker run --name get_zip lambda-perl-layer1:test echo ''
-	docker cp get_zip:/layer.zip layers/lib-layer.zip
-	docker rm get_zip
-
-
 upload-runtimes:
 	aws lambda --region us-west-2 publish-layer-version --layer-name Perl516 --zip-file fileb://runtimes/5.16/layer.zip
 	aws lambda --region us-west-2 publish-layer-version --layer-name Perl528 --zip-file fileb://runtimes/5.28/layer.zip
