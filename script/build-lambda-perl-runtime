@@ -3,9 +3,11 @@
 use strict;
 use warnings;
 
+use YAML::PP;
 use Path::Tiny;
 
-my $version = $ARGV[0] or die "Usage: $0 perl_version";
+my $config = YAML::PP->new->load_file('lambda-perl.config');
+my $version = $config->{ perl_version } or die "perl_version expected in config file";
 
 # List from https://www.cpan.org/src/
 my $versions = {

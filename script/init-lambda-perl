@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+
+use YAML::PP;
+
+# load lambda-perl.config in the current dir
+
+
+# Ensure we have a runtime for the Perl version declared
+# Build the layer for dependencies
+# zip code
