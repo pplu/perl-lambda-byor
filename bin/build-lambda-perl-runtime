@@ -5,9 +5,11 @@ use warnings;
 
 use YAML::PP;
 use Path::Tiny;
+use File::ShareDir qw/dist_file/;
 
 my $config = YAML::PP->new->load_file('lambda-perl.config');
 my $version = $config->{ perl_version } or die "perl_version expected in config file";
+my $bootstrap_file = dist_file('AWS-Lambda-Toolkit', 'bootstrap');
 
 # List from https://www.cpan.org/src/
 my $versions = {
@@ -49,6 +51,9 @@ RUN curl -s -L https://cpanmin.us | /opt/runtime/bin/perl - App::cpanminus
 COPY cpanfile /tmp/
 RUN cd /tmp ; /opt/runtime/bin/cpanm -n --installdeps .
 
+COPY bootstrap /opt/runtime/
+RUN chmod 755 /opt/runtime/bootstrap
+
 # just zip it up
 RUN cd /opt ; \\
     zip -r /layer.zip runtime
@@ -60,6 +65,7 @@ my $tmp_dir = Path::Tiny->tempdir("lambdaruntime_XXXXXX", CLEANUP => 0);
 
 path("$tmp_dir/Dockerfile")->spew($build_runtime_dockerfile);
 path("$tmp_dir/cpanfile")->spew($cpanfile);
+path($bootstrap_file)->copy("$tmp_dir/bootstrap");
 
 system "docker build -t lambda-perl-runtime:$version $tmp_dir";
 system "docker run --name get_runtime lambda-perl-runtime:$version echo ''";
