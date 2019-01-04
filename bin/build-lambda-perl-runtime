@@ -6,9 +6,11 @@ use warnings;
 use YAML::PP;
 use Path::Tiny;
 use File::ShareDir qw/dist_file/;
+use AWS::Lambda::Toolkit::Config;
 
-my $config = YAML::PP->new->load_file('lambda-perl.config');
-my $version = $config->{ perl_version } or die "perl_version expected in config file";
+my $config = AWS::Lambda::Toolkit::Config->new;
+
+my $version = $config->perl_version or die "perl_version expected in config file";
 my $bootstrap_file = dist_file('AWS-Lambda-Toolkit', 'bootstrap');
 
 # List from https://www.cpan.org/src/
@@ -72,4 +74,6 @@ system "docker run --name get_runtime lambda-perl-runtime:$version echo ''";
 system "docker cp get_runtime:/layer.zip $tmp_dir";
 system "docker rm get_runtime";
 
-path("$tmp_dir/layer.zip")->copy("./layers/perl_$version.zip");
+$config->layers_dir->mkpath;
+
+path("$tmp_dir/layer.zip")->copy($config->layers_dir . "/perl_$version.zip");
