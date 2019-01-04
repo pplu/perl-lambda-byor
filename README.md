@@ -49,8 +49,8 @@ mkdir layers
 build-lambda-perl-runtime
 ```
 
-will generate a `layers/perl_5.28.zip`. Create a layer in the Lambda console by uploading this zip file in the "Layers" section of the AWS Lambda Console. 
-Take good note of it's ARN. If you don't want to compile Perl, you can find it in this git repo.
+will generate a `layers/perl_5.28.zip`. Create a layer in the Lambda console by uploading this zip file in the "Layers" section of the AWS Lambda Console.
+Take good note of it's ARN.
 
  - Create a cpanfile
 
