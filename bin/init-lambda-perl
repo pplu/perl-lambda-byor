@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+use AWS::Lambda::Toolkit::Config;
+
+# load lambda-perl.config in the current dir
+
+my $config = AWS::Lambda::Toolkit::Config->new(
+  contents => {
+    lambda_name => 'test1',
+    perl_version => '5.28',
+    region => 'us-west-2',
+    handler => 'lambda.main'
+  }
+);
+
+$config->persist;
+

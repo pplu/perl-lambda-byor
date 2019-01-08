@@ -1,0 +1,11 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use AWS::Lambda::Toolkit::Config;
+
+my $config = AWS::Lambda::Toolkit::Config->new;
+
+system "rm layers/" . $config->lambda_name . '.zip';
+system "zip -r layers/" . $config->lambda_name . '.zip lambda lib/';

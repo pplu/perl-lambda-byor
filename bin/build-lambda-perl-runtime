@@ -1,0 +1,79 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Path::Tiny;
+use File::ShareDir qw/dist_file/;
+use AWS::Lambda::Toolkit::Config;
+
+my $config = AWS::Lambda::Toolkit::Config->new;
+
+my $version = $config->perl_version or die "perl_version expected in config file";
+my $bootstrap_file = dist_file('AWS-Lambda-Toolkit', 'bootstrap');
+
+# List from https://www.cpan.org/src/
+my $versions = {
+  '5.28' => '5.28.1',
+  '5.26' => '5.26.3',
+  '5.24' => '5.24.4',
+  '5.22' => '5.22.4',
+  '5.20' => '5.20.3',
+  '5.18' => '5.18.4',
+  '5.16' => '5.16.3',
+  '5.14' => '5.14.4',
+  '5.12' => '5.12.5',
+  '5.10' => '5.10.1',
+};
+
+my $cpanfile = <<EOCPANFILE;
+requires 'JSON::MaybeXS';
+EOCPANFILE
+
+my $minor_perl_version = $versions->{ $version };
+
+die "I don't know the minor version for Perl $version" if (not defined $minor_perl_version);
+
+my $build_runtime_dockerfile = <<EODOCKERFILE;
+FROM lambci/lambda:build
+
+# Install perl
+RUN curl -s -o perl-PERLVERSION.tar.gz http://www.cpan.org/src/5.0/perl-PERLVERSION.tar.gz ; \\
+    tar xzf perl-PERLVERSION.tar.gz ; \\
+    cd perl-PERLVERSION ; \\
+    ./Configure -des -Dprefix=/opt/runtime -Dman1dir=none -Dman3dir=none ; \\
+    make ; \\
+    make install
+
+# cpanm is needed for easy installation
+RUN curl -s -L https://cpanmin.us | /opt/runtime/bin/perl - App::cpanminus
+
+# modules to include in the base layer
+COPY cpanfile /tmp/
+RUN cd /tmp ; /opt/runtime/bin/cpanm -n --installdeps .
+
+COPY bootstrap /opt/
+RUN chmod 755 /opt/bootstrap
+
+# just zip it up
+RUN cd /opt ; \\
+    zip -r /layer.zip runtime ; \\
+    zip -g /layer.zip bootstrap
+EODOCKERFILE
+
+$build_runtime_dockerfile =~ s/PERLVERSION/$minor_perl_version/g;
+
+my $tmp_dir = Path::Tiny->tempdir("lambdaruntime_XXXXXX", CLEANUP => 0);
+
+path("$tmp_dir/Dockerfile")->spew($build_runtime_dockerfile);
+path("$tmp_dir/cpanfile")->spew($cpanfile);
+path($bootstrap_file)->copy("$tmp_dir/bootstrap");
+
+system "docker build -t lambda-perl-runtime:$version $tmp_dir";
+system "docker run --name get_runtime lambda-perl-runtime:$version echo ''";
+system "docker cp get_runtime:/layer.zip $tmp_dir";
+system "docker rm get_runtime";
+
+$config->layers_dir->mkpath;
+
+path("$tmp_dir/layer.zip")->copy($config->layers_dir . "/perl_$version.zip");

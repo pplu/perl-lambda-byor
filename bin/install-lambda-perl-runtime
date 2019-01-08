@@ -1,0 +1,23 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use AWS::CLIWrapper;
+use AWS::Lambda::Toolkit::Config;
+
+my $config = AWS::Lambda::Toolkit::Config->new;
+
+my $cli = AWS::CLIWrapper->new(
+    region => $config->region,
+);
+
+my $ret = $cli->lambda('publish-layer-version', { 
+  'layer-name' => 'Perl528',
+  'zip-file' => 'fileb://./layers/perl_5.28.zip'
+});
+
+my $new_layer_arn = $ret->{ LayerVersionArn };
+
+$config->contents->{ perl_runtime_layer } = $new_layer_arn;
+
+$config->persist;
