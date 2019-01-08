@@ -102,6 +102,12 @@ the lambda file with the parsed JSON payload passed to the function as a hashref
 TODO
 ====
 
+Make bootstrap include '/var/task/lib' so the libs in your project directory are usable from the lambda function
+
+automatically encode the return value from the function to JSON? (should it be overridable?)
+
+Adaptor for ALB incoming message format to Plack environment
+
 Follow all the Processing Tasks in [custom runtimes section](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html)
 
 Handle errors in compilation phase of the Lambda function
