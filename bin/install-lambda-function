@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use AWS::CLIWrapper;
+use AWS::Lambda::Toolkit::Config;
+
+my $config = AWS::Lambda::Toolkit::Config->new;
+
+
+my $cli = AWS::CLIWrapper->new(
+    region => $config->region,
+);
+
+my $ret = $cli->lambda('get-function', { 
+  'function-name' => $config->lambda_name,
+});
+
+if (not defined $ret) {
+  my $role = $config->role or die "Please configure a role in the config file";
+  my $handler = $config->handler or die "Please configure a handler in the config file";
+
+  my $creation = $cli->lambda('create-function', {
+    'function-name' => $config->lambda_name,
+    'runtime' => 'provided',
+    'role' => $role,
+    'handler' => $handler,
+    'zip-file' => 'fileb://' . $config->function_layer_file,
+    'layers' => [
+      $config->perl_runtime_layer,
+      $config->deps_layer,
+    ],
+  });
+} else {
+  my $update_code = $cli->lambda('update-function-code', {
+    'function-name' => $config->lambda_name,
+    'zip-file' => 'fileb://' . $config->function_layer_file,
+  });
+
+  my $update_layers = $cli->lambda('update-function-configuration', {
+    'function-name' => $config->lambda_name,
+    'layers' => [
+      $config->perl_runtime_layer,
+      $config->deps_layer,
+    ],
+  });
+}
+

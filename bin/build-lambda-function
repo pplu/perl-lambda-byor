@@ -3,37 +3,9 @@
 use strict;
 use warnings;
 
-use YAML::PP;
-use Path::Tiny;
+use AWS::Lambda::Toolkit::Config;
 
-my $config = YAML::PP->new->load_file('lambda-perl.config');
-my $perl_version = $config->{ perl_version } or die "perl_version expected in config file";
-my $lambda_name = $config->{ lambda_name } or die "lambda_name expected in config file";
+my $config = AWS::Lambda::Toolkit::Config->new;
 
-my $build_deps_dockerfile = <<EODOCKERFILE;
-FROM lambda-perl-runtime:PERLVERSION
-
-COPY cpanfile .
-
-RUN /opt/runtime/bin/cpanm -n --no-man-pages -l /opt/layer1-lib --installdeps .
-
-# The layer.zip file from the runtime is still present on the runtime container
-# , so we delete it, or else the zip command will add the files to the existing file
-RUN rm /layer.zip ; \\
-    cd /opt ; \\
-    zip -r /layer.zip layer1-lib
-EODOCKERFILE
-
-$build_deps_dockerfile =~ s/PERLVERSION/$perl_version/g;
-
-my $tmp_dir = Path::Tiny->tempdir("lambdadeps_XXXXXX", CLEANUP => 0);
-
-path("$tmp_dir/Dockerfile")->spew($build_deps_dockerfile);
-path("./cpanfile")->copy($tmp_dir);
-
-system "docker build -t lambda-deps-$lambda_name:latest $tmp_dir";
-system "docker run --name get_runtime lambda-deps-$lambda_name:latest echo ''";
-system "docker cp get_runtime:/layer.zip $tmp_dir";
-system "docker rm get_runtime";
-
-path("$tmp_dir/layer.zip")->copy("./layers/deps_$lambda_name.zip");
+system "rm layers/" . $config->lambda_name . '.zip';
+system "zip -r layers/" . $config->lambda_name . '.zip lambda lib/';
