@@ -3,6 +3,8 @@ package AWS::Lambda::Toolkit::Config;
   use YAML::PP;
   use Path::Tiny
 
+  has yaml => (is => 'ro', default => sub { YAML::PP->new });
+
   has project_dir => (is => 'ro', default => sub {
     Path::Tiny->cwd
   });
@@ -19,11 +21,19 @@ package AWS::Lambda::Toolkit::Config;
 
   has contents => (is => 'ro', lazy => 1, default => sub {
     my $self = shift;
-    YAML::PP->new->load_file($self->config_file);
+    $self->yaml->load_file($self->config_file);
   });
 
   sub perl_version {
     my $self = shift;
     return $self->contents->{ perl_version };
+  }
+
+  sub persist {
+    my $self = shift;
+    $self->yaml->dump_file(
+      $self->config_file,
+      $self->contents
+    );
   }
 1;
