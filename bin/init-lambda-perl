@@ -9,6 +9,7 @@ my $config = AWS::Lambda::Toolkit::Config->new(
     lambda_name => 'test1',
     perl_version => '5.28',
     region => 'us-west-2',
+    handler => 'lambda.main'
   }
 );
 
