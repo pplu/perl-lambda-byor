@@ -24,6 +24,22 @@ package AWS::Lambda::Toolkit::Config;
     $self->yaml->load_file($self->config_file);
   });
 
+  sub deps_layer_name {
+    my $self = shift;
+    return 'deps_' . $self->lambda_name;
+  }
+
+  sub deps_layer_file {
+    my $self = shift;
+    
+    path($self->layers_dir, $self->deps_layer_name . '.zip');
+  }
+
+  sub lambda_name {
+    my $self = shift;
+    return $self->contents->{ lambda_name };
+  }
+
   sub perl_version {
     my $self = shift;
     return $self->contents->{ perl_version };
