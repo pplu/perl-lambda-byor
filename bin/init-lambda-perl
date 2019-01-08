@@ -1,10 +1,16 @@
 #!/usr/bin/env perl
 
-use YAML::PP;
+use AWS::Lambda::Toolkit::Config;
 
 # load lambda-perl.config in the current dir
 
+my $config = AWS::Lambda::Toolkit::Config->new(
+  contents => {
+    lambda_name => 'test1',
+    perl_version => '5.28',
+    region => 'us-west-2',
+  }
+);
 
-# Ensure we have a runtime for the Perl version declared
-# Build the layer for dependencies
-# zip code
+$config->persist;
+
