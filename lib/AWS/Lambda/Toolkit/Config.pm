@@ -29,6 +29,11 @@ package AWS::Lambda::Toolkit::Config;
     return $self->contents->{ perl_version };
   }
 
+  sub region {
+    my $self = shift;
+    return $self->contents->{ region };
+  }
+
   sub persist {
     my $self = shift;
     $self->yaml->dump_file(
