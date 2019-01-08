@@ -16,9 +16,8 @@ my $ret = $cli->lambda('publish-layer-version', {
   'zip-file' => 'fileb://./layers/perl_5.28.zip'
 });
 
-use Data::Dumper;
-print Dumper($ret);
-
 my $new_layer_arn = $ret->{ LayerVersionArn };
 
-#TODO: write the layer arn to the config file
+$config->contents->{ perl_runtime_layer } = $new_layer_arn;
+
+$config->persist;

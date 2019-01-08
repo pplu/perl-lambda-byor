@@ -24,6 +24,11 @@ package AWS::Lambda::Toolkit::Config;
     $self->yaml->load_file($self->config_file);
   });
 
+  sub function_layer_file {
+    my $self = shift;
+    path($self->layers_dir, $self->lambda_name . '.zip');
+  }
+
   sub deps_layer_name {
     my $self = shift;
     return 'deps_' . $self->lambda_name;
@@ -48,6 +53,26 @@ package AWS::Lambda::Toolkit::Config;
   sub region {
     my $self = shift;
     return $self->contents->{ region };
+  }
+
+  sub perl_runtime_layer {
+    my $self = shift;
+    return $self->contents->{ perl_runtime_layer };
+  }
+
+  sub deps_layer {
+    my $self = shift;
+    return $self->contents->{ deps_layer };
+  }
+
+  sub role {
+    my $self = shift;
+    return $self->contents->{ role };
+  }
+
+  sub handler {
+    my $self = shift;
+    return $self->contents->{ handler };
   }
 
   sub persist {
