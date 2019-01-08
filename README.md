@@ -1,24 +1,33 @@
 Custom Lambda Runtime for Perl
 ==============================
 
-This is an experiment to get Perl support in Lambda
+This is an experiment to get Perl support in Lambda.
 
 It consists of an implementation of the `bootstrap` script as [AWS documentation suggests](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
 
 The implementation is not complete yet, though it does work to some extent :)
 
-Prepare
-=======
+Install AWS::Lambda::Toolkit
+============================
+
+```
+cpanm AWS::Lambda::Toolkit
+```
+
+(Note: you might need to install the `cpanminus` system package to get access to the cpanm command).
+
+This installs the utilities that help us bootstrap the Lambda environment.
+
+Note2: While the distribution is not uploaded to CPAN, you can install this way:
 
 ```
 git clone git@github.com:pplu/perl-lambda-byor.git
-carton install
-carton exec $SHELL -l
-export PATH=$PATH:$(pwd)/script
+make dist
+cpanm AWS-Lambda-Toolkit-0.01.tar.gz
 ```
 
-Try it
-======
+Create your Lambda function
+===========================
 
  - Create a directory for your Lambda project:
 
@@ -27,16 +36,11 @@ mkdir my-lambda-project
 cd my-lambda-project
 ```
 
- - Create a config file named `lambda-perl.config` for your project
+ - Initialize the directory as a lambda project:
+Create a config file named `lambda-perl.config` for your project
 ```
-# The dependencies layer will be built with this name
-lambda_name: test1
-# Which runtime we will be using
-perl_version: 5.28
-# The region where we will operate the lambdas
-region: us-east-1
+init-lambda-perl
 ```
-
  - Create a runtime layer
 
 Although Perl is installed in the Lambda environment, since AWS bases the OS on CentOS, the Perl runtime is quite old (5.16, where at the time of this
@@ -45,26 +49,24 @@ package, which makes that Perl very hard to deal with, since it's lacking almost
 on a system. Because of that, we're going to use custom compiled, modern versions of Perl as the runtime.
 
 ```
-mkdir layers
-build-lambda-perl-runtime
+build-lambda-perl-runtime 5.28
 ```
 
-will generate a `layers/perl_5.28.zip`. Create a layer in the Lambda console by uploading this zip file in the "Layers" section of the AWS Lambda Console.
-Take good note of it's ARN.
+will generate a `layers/perl_5.28.zip`. This can be uploaded to Lambda as a layer with `install-lambda-perl-runtime`.
 
- - Create a cpanfile
-
-Create a `cpanfile` with the dependencies for your Lambda function
+ - Create a cpanfile with the dependencies of your project
 
 ```
 requires 'Moo';
 ```
+
 Generate the dependencies layer with:
+
 ```
 build-lambda-deps-layer
 ```
 
-this will generate another zip file that can be uploaded as another layer to AWS Lambda.
+this will generate another zip file in the layers directory that can be uploaded with `install-lambda-deps`
 
  - Write code. Start a file called `lambda_code`. Write a Perl subroutine:
 
@@ -74,7 +76,7 @@ sub my_function {
 }
 ```
 
-Zip the `bootstrap` file with the `lambda_code` file: `zip layers/lambda.zip -j bootstrap/bootstrap lambda_code`
+Create a zip with with the `lambda_code` file: `zip layers/lambda.zip lambda_code`
 
 In the AWS Console: create a Lambda function with a custom runtime. Set the handler to the name of the file, followed by '.' 
 and the name of the function to invoke: `lambda_code.my_function`. 
