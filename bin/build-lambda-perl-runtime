@@ -53,12 +53,13 @@ RUN curl -s -L https://cpanmin.us | /opt/runtime/bin/perl - App::cpanminus
 COPY cpanfile /tmp/
 RUN cd /tmp ; /opt/runtime/bin/cpanm -n --installdeps .
 
-COPY bootstrap /opt/runtime/
-RUN chmod 755 /opt/runtime/bootstrap
+COPY bootstrap /opt/
+RUN chmod 755 /opt/bootstrap
 
 # just zip it up
 RUN cd /opt ; \\
-    zip -r /layer.zip runtime
+    zip -r /layer.zip runtime ; \\
+    zip -g /layer.zip bootstrap
 EODOCKERFILE
 
 $build_runtime_dockerfile =~ s/PERLVERSION/$minor_perl_version/g;
