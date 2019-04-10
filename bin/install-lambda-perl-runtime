@@ -16,6 +16,11 @@ my $ret = $cli->lambda('publish-layer-version', {
   'zip-file' => 'fileb://./layers/perl_5.28.zip'
 });
 
+if (not $ret) {
+  print "Something went wrong uploading the layer to Lambda. Please verify you have a correctly configured 'aws' CLI utility\n";
+  exit 1;
+}
+
 my $new_layer_arn = $ret->{ LayerVersionArn };
 
 $config->contents->{ perl_runtime_layer } = $new_layer_arn;
