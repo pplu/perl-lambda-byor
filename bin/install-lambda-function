@@ -5,6 +5,7 @@ use warnings;
 
 use AWS::CLIWrapper;
 use AWS::Lambda::Toolkit::Config;
+use JSON::MaybeXS qw/encode_json/;
 
 my $config = AWS::Lambda::Toolkit::Config->new;
 
@@ -17,6 +18,10 @@ my $ret = $cli->lambda('get-function', {
   'function-name' => $config->lambda_name,
 });
 
+sub env_to_cli_param {
+  my $env = shift;
+  return encode_json({ Variables => $env });
+}
 
 my $role = $config->role or die "Please configure a role in the config file";
 my $handler = $config->handler or die "Please configure a handler in the config file";
@@ -32,6 +37,7 @@ if (not defined $ret) {
       $config->perl_runtime_layer,
       $config->deps_layer,
     ],
+    'environment' => env_to_cli_param($config->env),
   });
 } else {
   my $update_code = $cli->lambda('update-function-code', {
@@ -47,6 +53,7 @@ if (not defined $ret) {
       $config->perl_runtime_layer,
       $config->deps_layer,
     ],
+    'environment' => env_to_cli_param($config->env),
   });
 }
 
