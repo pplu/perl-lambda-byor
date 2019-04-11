@@ -80,6 +80,16 @@ package AWS::Lambda::Toolkit::Config;
     return $self->contents->{ env } // {};
   }
 
+  sub timeout {
+    my $self = shift;
+    return $self->contents->{ timeout } // 30;
+  }
+
+  sub memory {
+    my $self = shift;
+    return $self->contents->{ memory } // 128;
+  }
+
   sub persist {
     my $self = shift;
     $self->yaml->dump_file(

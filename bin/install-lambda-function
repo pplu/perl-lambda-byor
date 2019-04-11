@@ -38,6 +38,8 @@ if (not defined $ret) {
       $config->deps_layer,
     ],
     'environment' => env_to_cli_param($config->env),
+    'timeout' => $config->timeout,
+    'memory-size' => $config->memory,
   });
 } else {
   my $update_code = $cli->lambda('update-function-code', {
@@ -54,6 +56,8 @@ if (not defined $ret) {
       $config->deps_layer,
     ],
     'environment' => env_to_cli_param($config->env),
+    'timeout' => $config->timeout,
+    'memory-size' => $config->memory,
   });
 }
 
