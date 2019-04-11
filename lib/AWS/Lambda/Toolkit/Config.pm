@@ -75,6 +75,11 @@ package AWS::Lambda::Toolkit::Config;
     return $self->contents->{ handler };
   }
 
+  sub env {
+    my $self = shift;
+    return $self->contents->{ env } // {};
+  }
+
   sub persist {
     my $self = shift;
     $self->yaml->dump_file(
