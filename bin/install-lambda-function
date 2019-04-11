@@ -17,10 +17,11 @@ my $ret = $cli->lambda('get-function', {
   'function-name' => $config->lambda_name,
 });
 
-if (not defined $ret) {
-  my $role = $config->role or die "Please configure a role in the config file";
-  my $handler = $config->handler or die "Please configure a handler in the config file";
 
+my $role = $config->role or die "Please configure a role in the config file";
+my $handler = $config->handler or die "Please configure a handler in the config file";
+
+if (not defined $ret) {
   my $creation = $cli->lambda('create-function', {
     'function-name' => $config->lambda_name,
     'runtime' => 'provided',
@@ -39,6 +40,8 @@ if (not defined $ret) {
   });
 
   my $update_layers = $cli->lambda('update-function-configuration', {
+    'role' => $role,
+    'handler' => $handler,
     'function-name' => $config->lambda_name,
     'layers' => [
       $config->perl_runtime_layer,
